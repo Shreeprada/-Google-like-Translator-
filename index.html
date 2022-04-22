@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #input-text{
+            width:99%;
+            height:270px;
+        }
+        #input,#output{
+            margin:5%;
+            height:300px;
+            width:40%;
+            border:1px solid black;
+        }
+        #container{
+            display: flex;
+        }
+        #input{
+            border: none;
+        }
+    </style>
+</head>
+<body>
+   <div id="container">
+       <div id="input">
+           <select name="inp_lang" id="inp_lang">
+               <option value="en">English</option>
+               <option value="hi">Hindi</option>
+               <option value="de">German</option>
+               <option value="fr">French</option>
+               <option value="ar">Arabic</option>
+           </select> 
+           <button onclick="Translate()">Translate</button>
+           <textarea oninput="debounce(Translate,1000)" name="input-text" id="input-text"></textarea>
+       </div>
+       <div id="output">
+        <select name="out_lang" id="out_lang">
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="de">German</option>
+               <option value="fr">French</option>
+               <option value="ar">Arabic</option>
+        </select>
+        <p id="out"></p>
+       </div>
+   </div> 
+</body>
+</html>
+<script>
+    function read(id){
+       return document.getElementById(id).value;
+    }
+async function Translate(){
+    try{
+    const input=read("input-text");
+    const input_lang=read("inp_lang");
+   // console.log(input_lang);
+    const output_lang=read("out_lang");
+   // console.log(output_lang);
+    const res=await fetch("https://libretranslate.de/translate",{
+        method:'POST',
+        body:JSON.stringify({
+           q:input,
+           source:input_lang,
+           target:output_lang,
+           format:"text",
+        }),
+        //additional info about our request that server might need to know
+        headers:{
+          "Content-Type":'application/json'
+        }
+    });
+    let data=await res.json();
+    console.log("data:",data);
+    appendtext(data);
+    }catch(err){
+        console.log("Error:",err);
+    }
+
+}
+function appendtext(data){
+    let p=document.getElementById("out");
+    p.innerText=data.translatedText;
+    var msg = new SpeechSynthesisUtterance();
+msg.text =data.translatedText ;
+window.speechSynthesis.speak(msg);
+  console.log(msg);
+}
+let id;
+    // debouncing
+    function debounce(func,delay){
+        if(id){
+            clearTimeout(id);
+        }
+       id=setTimeout(function(){
+         func();
+        },delay);
+    }
+
+</script>
